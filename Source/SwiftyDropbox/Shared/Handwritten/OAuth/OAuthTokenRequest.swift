@@ -43,7 +43,7 @@ class OAuthTokenExchangeRequest: OAuthTokenRequest {
 // MARK: - Refresh Token
 
 /// Request to refresh an access token. See [RFC6749 6](https://tools.ietf.org/html/rfc6749#section-6)
-class OAuthTokenRefreshRequest: OAuthTokenRequest {
+open class OAuthTokenRefreshRequest: OAuthTokenRequest {
     private let uid: String
     private let refreshToken: String
 
@@ -55,17 +55,20 @@ class OAuthTokenRefreshRequest: OAuthTokenRequest {
     ///     - scopes: An array of scopes to be granted for the refreshed access token.
     ///     - appKey: The API app key.
     ///     - locale: User's preferred locale.
-    init(uid: String, refreshToken: String, scopes: [String], appKey: String, locale: String) {
+    public init(uid: String, refreshToken: String, scopes: [String], appKey: String, locale: String, params: Parameters = [:]) {
         self.uid = uid
         self.refreshToken = refreshToken
-        var params = [
+        var commonParams = [
             "grant_type": "refresh_token",
             "refresh_token": refreshToken,
         ]
         if !scopes.isEmpty {
-            params["scope"] = scopes.joined(separator: " ")
+            commonParams["scope"] = scopes.joined(separator: " ")
         }
-        super.init(appKey: appKey, locale: locale, params: params)
+        
+        let allParams = params.merging(commonParams) { (_, commonParam) in commonParam }
+        
+        super.init(appKey: appKey, locale: locale, params: allParams)
     }
 
     /// Handle refresh result as per [RFC6749 5.1](https://tools.ietf.org/html/rfc6749#section-5.1)
@@ -99,7 +102,7 @@ extension Dictionary where Key == String, Value == String {
 }
 
 /// Makes a network request to `oauth2/token` to get short-lived access token.
-class OAuthTokenRequest {
+open class OAuthTokenRequest {
     private static let sessionManager: Session = {
         var sessionManager = Session(configuration: .default, startRequestsImmediately: false)
         return sessionManager
@@ -126,7 +129,7 @@ class OAuthTokenRequest {
     /// - Parameters:
     ///     - queue: The queue where completion handler should be called from.
     ///     - completion: The completion block.
-    func start(queue: DispatchQueue = DispatchQueue.main, completion: @escaping DropboxOAuthCompletion) {
+    public func start(queue: DispatchQueue = DispatchQueue.main, completion: @escaping DropboxOAuthCompletion) {
         retainSelf = self
         request.validate().responseJSON { [weak self] response in
             let oauthResult: DropboxOAuthResult

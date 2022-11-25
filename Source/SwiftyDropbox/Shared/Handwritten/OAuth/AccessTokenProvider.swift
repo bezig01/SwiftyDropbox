@@ -54,7 +54,7 @@ public class ShortLivedAccessTokenProvider: AccessTokenProvider {
     /// - Parameters:
     ///     - token: The `DropboxAccessToken` object for a short-lived token.
     ///     - tokenRefresher: Helper object that refreshes a token over network.
-    init(token: DropboxAccessToken, tokenRefresher: AccessTokenRefreshing) {
+    public init(token: DropboxAccessToken, tokenRefresher: AccessTokenRefreshing) {
         self.token = token
         self.tokenRefresher = tokenRefresher
     }
